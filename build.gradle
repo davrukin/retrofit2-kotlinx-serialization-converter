@@ -23,8 +23,8 @@ apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'org.jetbrains.kotlin.plugin.serialization'
 apply plugin: 'com.vanniktech.maven.publish'
 
-targetCompatibility = JavaVersion.VERSION_1_8
-sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_11
+sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
   mavenCentral()
@@ -33,7 +33,6 @@ repositories {
 dependencies {
   api "com.squareup.retrofit2:retrofit:2.9.0"
   api "org.jetbrains.kotlinx:kotlinx-serialization-core:${versions.serialization}"
-  implementation 'com.github.jitpack:gradle-simple:1.0'
 
   testImplementation "junit:junit:4.13.2"
   testImplementation "com.squareup.okhttp3:mockwebserver:4.12.0"
@@ -44,7 +43,7 @@ dependencies {
 
 tasks.withType(KotlinJvmCompile).configureEach { task ->
   task.compilerOptions {
-    jvmTarget = JvmTarget.JVM_1_8
+    jvmTarget = JvmTarget.JVM_11
     freeCompilerArgs.add(
       '-Xjsr305=strict',
     )
