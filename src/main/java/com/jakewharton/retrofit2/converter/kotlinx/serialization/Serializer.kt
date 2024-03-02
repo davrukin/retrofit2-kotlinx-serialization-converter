@@ -13,7 +13,7 @@ import okhttp3.RequestBody
 import okhttp3.ResponseBody
 
 internal sealed class Serializer {
-  abstract fun <T> fromResponseBody(loader: DeserializationStrategy<T>, body: ResponseBody): T
+  abstract fun <T> fromResponseBody(loader: DeserializationStrategy<T>, body: ResponseBody, onEach: (T) -> Unit = {}): T
   abstract fun <T> toRequestBody(contentType: MediaType, saver: SerializationStrategy<T>, value: T): RequestBody
 
   protected abstract val format: SerialFormat
@@ -21,9 +21,11 @@ internal sealed class Serializer {
   fun serializer(type: Type): KSerializer<Any> = format.serializersModule.serializer(type)
 
   class FromString(override val format: StringFormat) : Serializer() {
-    override fun <T> fromResponseBody(loader: DeserializationStrategy<T>, body: ResponseBody): T {
+    override fun <T> fromResponseBody(loader: DeserializationStrategy<T>, body: ResponseBody, onEach: (T) -> Unit): T {
       val string = body.string()
-      return format.decodeFromString(loader, string)
+      val t = format.decodeFromString(loader, string)
+	    onEach.invoke(t)
+	    return t
     }
 
     override fun <T> toRequestBody(contentType: MediaType, saver: SerializationStrategy<T>, value: T): RequestBody {
@@ -33,9 +35,11 @@ internal sealed class Serializer {
   }
 
   class FromBytes(override val format: BinaryFormat) : Serializer() {
-    override fun <T> fromResponseBody(loader: DeserializationStrategy<T>, body: ResponseBody): T {
+    override fun <T> fromResponseBody(loader: DeserializationStrategy<T>, body: ResponseBody, onEach: (T) -> Unit): T {
       val bytes = body.bytes()
-      return format.decodeFromByteArray(loader, bytes)
+      val t = format.decodeFromByteArray(loader, bytes)
+	    onEach.invoke(t)
+	    return t
     }
 
     override fun <T> toRequestBody(contentType: MediaType, saver: SerializationStrategy<T>, value: T): RequestBody {

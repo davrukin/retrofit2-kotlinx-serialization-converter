@@ -15,16 +15,17 @@ import retrofit2.Retrofit
 
 internal class Factory(
   private val contentType: MediaType,
-  private val serializer: Serializer
+  private val serializer: Serializer,
+  private val onEach: (Any) -> Unit = {},
 ) : Converter.Factory() {
   @Suppress("RedundantNullableReturnType") // Retaining interface contract.
   override fun responseBodyConverter(
     type: Type,
     annotations: Array<out Annotation>,
-    retrofit: Retrofit
+    retrofit: Retrofit,
   ): Converter<ResponseBody, *>? {
     val loader = serializer.serializer(type)
-    return DeserializationStrategyConverter(loader, serializer)
+    return DeserializationStrategyConverter(loader, serializer, onEach)
   }
 
   @Suppress("RedundantNullableReturnType") // Retaining interface contract.
@@ -32,7 +33,7 @@ internal class Factory(
     type: Type,
     parameterAnnotations: Array<out Annotation>,
     methodAnnotations: Array<out Annotation>,
-    retrofit: Retrofit
+    retrofit: Retrofit,
   ): Converter<*, RequestBody>? {
     val saver = serializer.serializer(type)
     return SerializationStrategyConverter(contentType, saver, serializer)
@@ -47,8 +48,9 @@ internal class Factory(
  * instance last to allow the other converters a chance to see their types.
  */
 @JvmName("create")
-fun StringFormat.asConverterFactory(contentType: MediaType): Converter.Factory {
-  return Factory(contentType, FromString(this))
+@JvmOverloads
+fun StringFormat.asConverterFactory(contentType: MediaType, onEach: (Any) -> Unit = {}): Converter.Factory {
+  return Factory(contentType, FromString(this), onEach)
 }
 
 /**
@@ -59,6 +61,7 @@ fun StringFormat.asConverterFactory(contentType: MediaType): Converter.Factory {
  * instance last to allow the other converters a chance to see their types.
  */
 @JvmName("create")
-fun BinaryFormat.asConverterFactory(contentType: MediaType): Converter.Factory {
-  return Factory(contentType, FromBytes(this))
+@JvmOverloads
+fun BinaryFormat.asConverterFactory(contentType: MediaType, onEach: (Any) -> Unit = {}): Converter.Factory {
+  return Factory(contentType, FromBytes(this), onEach)
 }
